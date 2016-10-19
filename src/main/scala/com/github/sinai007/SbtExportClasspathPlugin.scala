@@ -11,12 +11,21 @@ object SbtExportClasspathPlugin extends AutoPlugin {
     val classpathFile = settingKey[File]("The name of the file where the classpath is saved")
     val exportClasspath = taskKey[Unit]("Exports the classpath")
 
+    // val configurationname = Def.taskDyn {
+    //     configuration
+    // }
     def exportClasspathSettings(configType: String): Seq[Def.Setting[_]] = Seq(
-      exportClasspath := {
-        exportClasspathImpl(classpathFile.value, dependencyClasspath.value, Keys.classDirectory.value, sbt.Keys.streams.value)
+      exportClasspath <<= (configuration, Keys.target, dependencyClasspath, Keys.classDirectory, sbt.Keys.streams) map { (configuration, target, cp, cd, streams) =>
+        exportClasspathImpl(new File(s"${target}/.${configuration.name}-classpath"), cp, cd, streams)
+      }
+        // val cfg = configuration.?.value
+        // println(s"Configuration ${cfg}")
+
         //ClassIndexer((indexFile in indexClasses).value, dependencyClasspath.value, Keys.classDirectory.value, sbt.Keys.streams.value).index()
-      },
-      classpathFile <<= Keys.target(_ / s".${configType}-classpath")
+      // },
+      // classpathFile <<= (configuration, Keys.target) map { cfg, target =>
+        // target / s".${cfg}-classpath")
+      // }
     )
   }
 
